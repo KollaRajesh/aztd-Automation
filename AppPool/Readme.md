@@ -1,8 +1,8 @@
----
-`Script`:AppPool.ps1
-`Date`: 03-28-2023
-`Description`: This script used to make actions on App pool.
----
+<!--- 
+Script: Readme notes for AppPool.ps1
+Date: 03-28-2023
+Description: This script used to make actions on App pool.
+ ---> 
 ## How to perform Actions on AppPool across all servers for specific (or) set of environment(s).
 
 We can run set of command on specific host machine remotly using  Invoke-Command
