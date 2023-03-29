@@ -8,7 +8,8 @@ Description: This script used to make actions on App pool.
 We can run set of command on specific host machine remotly using  Invoke-Command
 
 ```
-Invoke-Command  -ComputerName $hostname -ScriptBlock {param($apn) Import-Module WebAdministration ; Get-WebAppPoolState $apn} -Args $appPoolName
+ Invoke-Command  -ComputerName $hostname -ScriptBlock {param($apn) Import-Module WebAdministration ;
+ Get-WebAppPoolState $apn} -Args $appPoolName
 ```
 
  >  **pre-requisites** for Invoke-Command are 
