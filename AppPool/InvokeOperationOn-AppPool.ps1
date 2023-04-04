@@ -2,6 +2,56 @@
 ##Install-Module -Name WebAdministration
 #Install-Module -Name XWebAdministration
 
+ <#
+    .SYNOPSIS
+        Script to perform operation on specific application pool over set of server farms for specific environment remotely.
+    .DESCRIPTION
+        This script is defined to simplify operations on specific application pool over set of server farms remotely for specific environment remotely 
+        using cmd-lets of WebAdministration module. Applying operations on application pool for specific server remotely using Invoke-Command.
+    
+        PreRequisites:
+             1. WinRm Service should run in source server (From where triggering commands and Destination servers (on which machine applying commands)
+             2.5985 port should be open between source and destination server .
+             3. Environtment.json will be update with correct server names and environment.
+    .PARAMETER Environment
+        Specifies environment name.
+            List of allowed environments:"Test1","Test2","Test3","Test5","Test6","QA","PROD_NonDR","PROD_DR","PROD"
+          Note: This list will be updated when customized script based on needs
+    .PARAMETER Operation
+        Specifies environment name.
+             List of allowed environments:"Get-WebAppPoolState","Start-WebAppPool","Stop-WebAppPool","Restart-WebAppPool"
+    .PARAMETER appPoolName
+        Specifies app pool name.
+        List of allowed environments:"UserAppPool","PatientAppPool","LoanAppPool","ServiceAppPool","PremiumAppPool","BillAppPool","PaymentAppPool"
+        Note: This list will be updated when customized script based on needs
+    
+    .INPUTS
+     None. You cannot pipe objects 
+
+    .OUTPUTS
+    None. dont return any one value . it writes status of application pool on the host
+
+    .EXAMPLE
+        PS > InvokeOperationOn-AppPool -Environment Test1 
+
+    .EXAMPLE
+         PS > InvokeOperationOn-AppPool -Environment Test1  -appPoolName LoanAppPool
+
+    .EXAMPLE
+          PS > InvokeOperationOn-AppPool -Environment Test1  -appPoolName LoanAppPool -Operation Restart-WebAppPool
+
+    .LINK 
+        WebAdministration
+    .LINK 
+        Get-WebAppPoolState,Start-WebAppPool,Stop-WebAppPool,Restart-WebAppPool
+    .LINK 
+        Invoke-Command
+
+     .NOTES
+        Author: Rajesh Kolla
+        Last Edit: 2023-04-03
+        Version 1.0 - initial version
+      #>
 [CmdletBinding()]
 Param(
    [Parameter(Mandatory=$true)]
@@ -13,7 +63,7 @@ Param(
    [Parameter(Mandatory=$true)]
    [String]$Operation="Get-WebAppPoolState",
    [Parameter(Mandatory=$false)]
-   [ValidateSet("UserAppPool","PatientAppPool","LoanAppPool","ServiceAppPool","PremiumAppPool","BillAppPool","PaymentAppPool","")]
+   [ValidateSet("UserAppPool","PatientAppPool","LoanAppPool","ServiceAppPool","PremiumAppPool","BillAppPool","PaymentAppPool")]
    $appPoolName="UserAppPool"
    )
 
