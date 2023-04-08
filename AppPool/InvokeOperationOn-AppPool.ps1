@@ -2,6 +2,56 @@
 ##Install-Module -Name WebAdministration
 #Install-Module -Name XWebAdministration
 
+ <#
+    .SYNOPSIS
+        Script to perform operation on specific application pool over set of server farms for specific environment remotely.
+    .DESCRIPTION
+        This script is defined to simplify operations on specific application pool over set of server farms remotely for specific environment remotely 
+        using cmd-lets of WebAdministration module. Applying operations on application pool for specific server remotely using Invoke-Command.
+    
+        PreRequisites:
+             1. WinRm Service should run in source server (From where triggering commands and Destination servers (on which machine applying commands)
+             2.5985 port should be open between source and destination server .
+             3. Environtment.json will be update with correct server names and environment.
+    .PARAMETER Environment
+        Specifies environment name.
+            List of allowed environments:"Test1","Test2","Test3","Test5","Test6","QA","PROD_NonDR","PROD_DR","PROD"
+          Note: This list will be updated when customized script based on needs
+    .PARAMETER Operation
+        Specifies environment name.
+             List of allowed environments:"Get-WebAppPoolState","Start-WebAppPool","Stop-WebAppPool","Restart-WebAppPool"
+    .PARAMETER appPoolName
+        Specifies app pool name.
+        List of allowed environments:"UserAppPool","PatientAppPool","LoanAppPool","ServiceAppPool","PremiumAppPool","BillAppPool","PaymentAppPool"
+        Note: This list will be updated when customized script based on needs
+    
+    .INPUTS
+     None. You cannot pipe objects 
+
+    .OUTPUTS
+    None. dont return any one value . it writes status of application pool on the host
+
+    .EXAMPLE
+        PS > InvokeOperationOn-AppPool -Environment Test1 
+
+    .EXAMPLE
+         PS > InvokeOperationOn-AppPool -Environment Test1  -appPoolName LoanAppPool
+
+    .EXAMPLE
+          PS > InvokeOperationOn-AppPool -Environment Test1  -appPoolName LoanAppPool -Operation Restart-WebAppPool
+
+    .LINK 
+        WebAdministration
+    .LINK 
+        Get-WebAppPoolState,Start-WebAppPool,Stop-WebAppPool,Restart-WebAppPool
+    .LINK 
+        Invoke-Command
+
+     .NOTES
+        Author: Rajesh Kolla
+        Last Edit: 2023-04-03
+        Version 1.0 - initial version
+      #>
 [CmdletBinding()]
 Param(
    [Parameter(Mandatory=$true)]
@@ -13,7 +63,7 @@ Param(
    [Parameter(Mandatory=$true)]
    [String]$Operation="Get-WebAppPoolState",
    [Parameter(Mandatory=$false)]
-   [ValidateSet("UserAppPool","PatientAppPool","LoanAppPool","ServiceAppPool","PremiumAppPool","BillAppPool","PaymentAppPool","")]
+   [ValidateSet("UserAppPool","PatientAppPool","LoanAppPool","ServiceAppPool","PremiumAppPool","BillAppPool","PaymentAppPool")]
    $appPoolName="UserAppPool"
    )
 
@@ -101,6 +151,20 @@ function  Invoke-AppPoolAction(){
     return $status
 }
 
+$WebBeServersForAllEnv= Get-Content -Path ".\Environments.json" -Raw -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue |ConvertFrom-Json |Convert-ToHashTable
+
+$WebBackEndServers.Clear();
+if($WebBeServersForAllEnv.ContainsKey($Environment)){
+    $WebBackEndServers.AddRange($Environment,[string[]]$WebBeServersForAllEnv[$Environment])
+}elseif($Environment.ToUpper() -eq "PROD"){
+      $WebBeServersForAllEnv.Keys |Where-Object {$_ -like "$Environment"} | &{Process{WebBackEndServers.Add($_ , [string[]]$WebBeServersForAllEnv[$_]) }};
+    }
+elseif($Environment.ToUpper() -eq "QA"){
+      $WebBeServersForAllEnv.Keys |Where-Object {$_ -like "Test"} | &{Process{WebBackEndServers.Add($_ , [string[]]$WebBeServersForAllEnv[$_])}};
+    }
+
+
+
 $WebBackEndServers.Keys | &{Process{ $env=$_
     $WebBeServersForAllEnv[$env] | &{Process{ 
 
@@ -119,25 +183,10 @@ $WebBackEndServers.Keys | &{Process{ $env=$_
     }};
 }};
 
+<## --Commented obsolete functions
 
 
-$WebBeServersForAllEnv= Get-Content -Path ".\Environments.json" -Raw -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue |ConvertFrom-Json |Convert-ToHashTable
-
-$WebBackEndServers.Clear();
-if($WebBeServersForAllEnv.ContainsKey($Environment)){
-    $WebBackEndServers.AddRange($Environment,[string[]]$WebBeServersForAllEnv[$Environment])
-}elseif($Environment.ToUpper() -eq "PROD"){
-      $WebBeServersForAllEnv.Keys |Where-Object {$_ -like "$Environment"} | &{Process{WebBackEndServers.Add($_ , [string[]]$WebBeServersForAllEnv[$_]) }};
-    }
-elseif($Environment.ToUpper() -eq "QA"){
-      $WebBeServersForAllEnv.Keys |Where-Object {$_ -like "Test"} | &{Process{WebBackEndServers.Add($_ , [string[]]$WebBeServersForAllEnv[$_])}};
-    }
-
-
-
-<#--Commented obsolete functions
-
-<## $WebBeServersForAllEnv=@{ PROD_NonDR=@("ProdWeb-01","ProdWeb-02","ProdWeb-03","ProdWeb-04","ProdWeb-05","ProdWeb-06");
+## $WebBeServersForAllEnv=@{ PROD_NonDR=@("ProdWeb-01","ProdWeb-02","ProdWeb-03","ProdWeb-04","ProdWeb-05","ProdWeb-06");
                     PROD_DR=@("ProdWeb-07","ProdWeb-08","ProdWeb-09","ProdWeb-10","ProdWeb-11","ProdWeb-12");
                     Test1=@("Test1-Web-01","Test1-Web-02");
                     Test2=@("Test2-Web-01","Test2-Web-02");
@@ -145,8 +194,7 @@ elseif($Environment.ToUpper() -eq "QA"){
                     Test5=@("Test5-Web-01","Test5-Web-02");
                     Test6=@("Test6-Web-01","Test6-Web-02");
                     }
-
-$WebBeServersForAllEnv | ConvertTo-Json |Out-File -FilePath "C:\Users\rkolla\CodeRep\PS\AppPool\Environments.json" ##>
+##$WebBeServersForAllEnv | ConvertTo-Json |Out-File -FilePath "C:\Users\rkolla\CodeRep\PS\AppPool\Environments.json"
  
 
         ## This function is used to get app pool state in hosted machine remotely.
@@ -196,4 +244,4 @@ $WebBeServersForAllEnv | ConvertTo-Json |Out-File -FilePath "C:\Users\rkolla\Cod
 
             Invoke-Command  -ComputerName $hostname -ScriptBlock{param($apn) Import-Module WebAdministration ; Restart-WebAppPool  -Name $apn} -Args $appPoolName
         }
---#>
+##>
