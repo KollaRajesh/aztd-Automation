@@ -28,7 +28,7 @@ Param(
             [String]$Environment)
         
         begin {
-            $webBackendServers=script:Get-Servers -Environment $Environment
+            $webBackendServers=Get-Servers -Environment $Environment
             $credentials = Get-Credential -UserName $env:UserName -Message 'Please enter password'
             $userName =$credentials.UserName
             $password =$credentials.GetNetworkCredential().Password
@@ -85,7 +85,7 @@ Param(
         .NOTES
             General notes
     #>
-    function script:Get-Servers {
+    function Get-Servers {
         [CmdletBinding()]
         Param(
             [Parameter(Mandatory=$true)]
@@ -96,7 +96,7 @@ Param(
         begin {
             $WebBackendServers=New-Object 'System.Collections.Generic.Dictionary[String,System.Collections.Generic.List[string]]';
             $EnvironmentsConfigFile=Join-Path $PSScriptRoot "Environments.json"
-            $WebBeServersForAllEnv= Get-Content -Path $EnvironmentsConfigFile -Raw -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue |ConvertFrom-Json |global:Convert-ToHashTable
+            $WebBeServersForAllEnv= Get-Content -Path $EnvironmentsConfigFile -Raw -ErrorAction:SilentlyContinue -WarningAction:SilentlyContinue |ConvertFrom-Json |Convert-ToHashTable
          }
         process {
             $WebBackendServers.Clear();
@@ -148,7 +148,7 @@ Param(
         Get-Content
 
       #>
- function  global:Convert-ToHashTable(){
+ function  Convert-ToHashTable(){
         [CmdletBinding()]
                 Param(
                 [Parameter(Mandatory=$true,ValueFromPipeline=$true )]
