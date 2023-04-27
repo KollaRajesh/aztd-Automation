@@ -1,0 +1,10 @@
+{
+ "BatchMonitorPath":"C:\\BatchMonitor",
+ "EmailConfig":{
+                "SMTPRelay":"apprelay.AppPoolManagement.com",
+                "SendFromAddress":"No-reply@AppPoolManagement.com",
+                "CCRecipients":"AppPool-Level1@AppPoolManagement.com",
+                "Recipients":"Rajesh@AppPoolManagement.com"
+        }
+
+}

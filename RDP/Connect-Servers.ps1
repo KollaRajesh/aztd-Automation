@@ -28,14 +28,14 @@ Param(
             [String]$Environment)
         
         begin {
-            $WebBackendServers=Get-Servers -Environment $Environment
+            $webBackendServers=Get-Servers -Environment $Environment
             $credentials = Get-Credential -UserName $env:UserName -Message 'Please enter password'
             $userName =$credentials.UserName
             $password =$credentials.GetNetworkCredential().Password
         }
         
         process {
-                $webBackendServers | &{Process {
+                $webBackendServers[$Environment] | &{Process {
                     ## Adding credentials into windows credential store  for hostname 
                     cmdkey /generic:$_ /user:$userName /pass :$password
                 
@@ -50,7 +50,7 @@ Param(
              }
         
         end {
-                $cmdKeysToRemove =cmdkey  /list | &{Process {if ($_ -like "*Target=*" -and $webBackendServers.Contains($_.Split("=")[1].Trim())){
+                $cmdKeysToRemove =cmdkey  /list | &{Process {if ($_ -like "*Target=*" -and $webBackendServers[$Environment].Contains($_.Split("=")[1].Trim())){
                     $_.Split("=")[1].Trim()}}};
                     
                     $cmdKeysToRemove| &{Process {
