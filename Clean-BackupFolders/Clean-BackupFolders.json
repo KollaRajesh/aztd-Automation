@@ -1,0 +1,9 @@
+{
+    "DWHExtract":{
+                  "Path":"D:\\DWHData\\DWHExtract\\Backup",
+                  "RetentionPeriod":20
+                },
+    "DWHMart":{ "Path":"D:\\DWHData\\DWHMart\\Backup",
+                "RetentionPeriod":15
+              }
+}
