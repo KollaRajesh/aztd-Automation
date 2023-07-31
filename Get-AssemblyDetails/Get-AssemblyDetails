@@ -1,0 +1,230 @@
+function Get-AssemblyDetails
+{
+    <#
+    .SYNOPSIS
+        Get Details of Assemblies in the given path
+    .DESCRIPTION
+        Get details of assemblies in the given path using reflection.
+
+    .PARAMETER Path
+        location of assemblies with wild cards
+   .PARAMETER LiteralPath
+        location of assemblies with out wild cards
+    .INPUTS
+        path for assemblies 
+    .OUTPUTS 
+       Return hashtable with Assembly name as key and  List of Assembly details as value.
+    .NOTES
+        Program: Get-AssemblyDetails.ps1
+        Author: Rajesh Kolla
+        Date: 07/31/2023
+
+    .Example  
+      
+      $list=gci  -Path "C:\Users\rkolla\.dotnet\tools\.store\dotnet-ef\5.0.1"  -Filter "*.dll" -Recurse|Get-AssemblyDetails
+      $list.Keys 
+      $Key=$list.Keys[0]
+      [hashtable]$list[$Key]
+#>
+    [CmdletBinding(DefaultParameterSetName="Path")]
+    param(
+        [Parameter(Mandatory=$true,
+                    Position=0,
+                    ParameterSetName="Path",
+                    ValueFromPipeline=$true,
+                    ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $Path,
+   
+        [Alias("PSPath")]
+        [Parameter(Mandatory=$true,
+                    Position=0,
+                    ParameterSetName="LiteralPath",
+                    ValueFromPipelineByPropertyName=$true)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]
+        $LiteralPath
+    )
+    Begin
+    {
+        $FunctionName= $MyInvocation.InvocationName
+        Write-Verbose -Message "$FunctionName - Start"
+        $PathIntrinsics = [System.Management.Automation.PathIntrinsics]$ExecutionContext.SessionState.Path 
+        $resultTable = New-Object System.Collections.Hashtable
+     }
+    Process
+    {
+        Write-Verbose -Message "$FunctionName - processing"
+       if ($psCmdlet.ParameterSetName -eq "Path")
+       {
+                $resolvedPaths = @()
+           # In the non-literal case we may need to resolve a wildcarded path
+            foreach ($apath in $Path){
+                $resolvedPaths += @(Resolve-Path $apath | &{Process { $_.Path }})
+            }
+       }
+       else {  $resolvedPaths = $LiteralPath }
+        
+       $resolvedPaths |&{Process
+                        {
+                             $rpath=$_
+                       if ($PathIntrinsics.IsProviderQualified($rpath)){
+                        $rpath = $PathIntrinsics.GetUnresolvedProviderPathFromPSPath( $rpath)  }
+
+                        $assemblyInfo = Get-AssemblyInformation -AssemblyFile $rpath
+                        
+                        if( $assemblyInfo -and !$resultTable.ContainsKey($assemblyInfo.Name)){
+                          
+                              $resultTable.Add($assemblyInfo.Name ,$assemblyInfo)
+                          }
+        
+                        }}
+    }
+    end{
+     $resultTable
+        Write-Verbose -Message "$FunctionName - End"
+
+    }
+ }
+
+function Get-AssemblyCustomProperty{
+    param
+    (
+        [System.Reflection.Assembly] $assembly,
+        [string]$TypeNameLike,
+        [string]$Property = $null
+    )
+    $value = $null
+    try
+    {
+      foreach ($attribute in $assembly.GetCustomAttributes($false) )
+        {
+            if ($attribute.GetType().ToString() -like "*$TypeNameLike*")
+            {
+                if ($null -ne $Property)
+                {
+                    # Select-Object -ExpandProperty fails if property value is $null
+                    try {
+                        $value = $attribute | Select-Object -ExpandProperty $Property
+                    }
+                    catch {
+                        $value = $null
+                    }
+                }
+                else
+                {
+                    $value = $attribute
+                }
+                break;
+            }
+        }
+    } Catch {
+          $message= "Exception Occured while getting custom attributes: "+ $_.Exception.Message
+           Write-Verbose   $message
+    }
+     $value
+}
+ 
+function Get-AssemblyInfoAsHashtable {
+param
+(
+[System.Reflection.Assembly] $assembly
+)
+    $assemblyHash = @{}
+   
+    <#
+    $refTable=[ref]$assemblyHash 
+    
+    Add-ToHashTable -hashTable $refTable -Key "FullName"  -Value $(([Reflection.AssemblyName]::GetAssemblyName($assembly.Location)).FullName)
+    Add-ToHashTable -hashTable $refTable -Key "Name"  -Value $($assembly.ManifestModule.Name)
+    Add-ToHashTable -hashTable $refTable -Key "Location"  -Value $($assembly.Location)
+    Add-ToHashTable -hashTable $refTable -Key "ImageRuntimeVersion"  -Value $($assembly.ImageRuntimeVersion)
+    Add-ToHashTable -hashTable $refTable -Key "GlobalAssemblyCache"  -Value $($assembly.GlobalAssemblyCache )
+    Add-ToHashTable -hashTable $refTable -Key "Title"  -Value $(Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Title' -Property 'Title' )
+    Add-ToHashTable -hashTable $refTable -Key "Authors"  -Value $(Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Authors' -Property 'Authors')
+    Add-ToHashTable -hashTable $refTable -Key "Company"  -Value $(Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Company' -Property 'Company')
+    Add-ToHashTable -hashTable $refTable -Key "PackageDescription"  -Value $( Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'PackageDescription' -Property 'PackageDescription')
+    Add-ToHashTable -hashTable $refTable -Key "Configuration"  -Value $(Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Configuration' -Property 'Configuration')
+    Add-ToHashTable -hashTable $refTable -Key "Description"  -Value $( Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Description' -Property 'Description')#>
+
+    $assemblyHash.FullName =([Reflection.AssemblyName]::GetAssemblyName($assembly.Location)).FullName
+    $assemblyHash.Name = $assembly.ManifestModule.Name
+    $assemblyHash.Location = $assembly.Location
+    $assemblyHash.ImageRuntimeVersion = $assembly.ImageRuntimeVersion
+    $assemblyHash.GlobalAssemblyCache = $assembly.GlobalAssemblyCache  
+    $assemblyHash.Title = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Title' -Property 'Title'   
+    $assemblyHash.Authors = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Authors' -Property 'Authors'
+    $assemblyHash.Company = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Company' -Property 'Company'
+    $assemblyHash.PackageDescription = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'PackageDescription' -Property 'PackageDescription'  
+    $assemblyHash.Configuration = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Configuration' -Property 'Configuration'
+    $assemblyHash.Description = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Description' -Property 'Description'#>
+    $assemblyHash.Product = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Product' -Property 'Product'
+    $assemblyHash.Copyright = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Copyright' -Property 'Copyright'
+    $assemblyHash.Trademark = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Trademark' -Property 'Trademark'
+    $assemblyHash.DelaySign = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'DelaySign' -Property 'DelaySign'
+    $assemblyHash.KeyName = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'KeyName' -Property 'KeyName'
+    $assemblyHash.ClsCompliant = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'ClsCompliant' -Property 'IsCompliant'
+    $assemblyHash.ComVisible = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'ComVisible' -Property 'Value'
+    $assemblyHash.IsJITTrackingEnabled = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'System.Diagnostics.DebuggableAttribute' -Property 'IsJITTrackingEnabled'
+    $assemblyHash.IsJITOptimizerDisabled = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'System.Diagnostics.DebuggableAttribute' -Property 'IsJITOptimizerDisabled'
+    $assemblyHash.DebuggingFlags = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'System.Diagnostics.DebuggableAttribute' -Property 'DebuggingFlags'
+    $assemblyHash.CompilationRelaxations = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'CompilationRelaxations' -Property 'CompilationRelaxations'
+    $assemblyHash.WrapNonExceptionThrows = Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'System.Runtime.CompilerServices.RuntimeCompatibilityAttribute' -Property 'WrapNonExceptionThrows'
+ 
+    $assemblyHash
+}
+function Get-AssemblyInformation{
+param
+(
+    $AssemblyFile
+)
+    $info = @{}
+    $info.FullName = $AssemblyFile;
+    $info.Name = Split-Path -Path $AssemblyFile -Leaf;
+    $info.IsValidDotNetAssembly = $false
+    
+    try{
+        $assembly  =[Reflection.Assembly]::LoadFile($AssemblyFile)
+
+        $info = Get-AssemblyInfoAsHashtable -assembly $assembly
+        $info.IsValidDotNetAssembly  = $true
+    }
+    catch [System.BadImageFormatException] {
+
+                # If a BadImageFormatException is thrown, the file is not an assembly
+              $message= "The file is not a .NET assembly : " + $_.Exception.Message
+              Write-Verbose $message
+              }
+     Catch [System.IO.FileNotFoundException]{
+                $message="Could not load reference file or assembly : " + $_.Exception.Message
+             Write-Verbose   $message
+             $info.IsValidDotNetAssembly =$true
+     }
+    catch { 
+        $message=  "Exception Occured while loading file :"  +$_.Exception.Message
+       Write-Verbose $message
+    }
+        
+    $info
+}
+
+<#function Add-ToHashTable {
+ Param ([ref]$hashTable,[string]$Key, $Value)
+ Begin{
+    $FunctionName= $MyInvocation.InvocationName
+    Write-Verbose -Message "$FunctionName - Start"
+    [hashTable]$hash=$hashTable.Value
+ }
+ Process{
+        Write-Verbose -Message "$FunctionName - processing"
+    
+        if(!([string]::IsNullOrWhiteSpace($Key)) -and  ($hash)){
+             if( !($hash.ContainsKey($key))) {$hash.Add($Key,$Value)}
+             else {  $hash[$Key] =$Value }
+        }
+ }
+ End{
+     Write-Verbose -Message "$FunctionName - End"
+ }
+}#>
