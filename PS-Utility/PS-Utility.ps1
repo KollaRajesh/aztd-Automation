@@ -299,3 +299,31 @@ function Test-ChangeTransactionID {
   $ChangeTransactionID =$ChangeTransactionID.ToUpper()
   return ($ChangeTransactionID -match "^[CHG]{3}[0-9]{8}$" -or $ChangeTransactionID -match "^[INC]{3}[0-9]{8}$")
 }
+
+
+function Merge-Hashtables([ScriptBlock]$Operator) {
+
+  <#
+  
+    .Examples
+      $hash1 = @{ Number = 1; Name = "dotnet-ef.dll"; Color = "Blue"}
+      $hash2 = @{ Number = 2; Shape = "ef.dll"; Color ="Red"}
+      $hash3 = @{ Number = 3; Shape = "Circle"; Color ="Green"}
+      
+      $hash1,$hash2,$hash3 |  Merge-Hashtables
+      $hash1,$hash2,$hash3 |  Merge-Hashtables  {$_ -join ","}
+      $hash1,$hash2,$hash3 |  Merge-Hashtables {$_ | Sort-Object}
+      $hash1,$hash2,$hash3 |  Merge-Hashtables {$_ | Select -First 1}
+      $hash1,$hash2,$hash3 |  Merge-Hashtables { $_ | Select -First 2}
+  
+  #>
+    $Output = @{}
+      ForEach ($hashtable in $input) {
+          If ($Hashtable -is [Hashtable]) {
+            $hashtable.Keys |&{Process{ $key=$_ ;  $Output.$key = If ($Output.ContainsKey($key)) {@($Output.$key) + $hashtable.$key} Else  {$hashtable.$key}   }}
+          }
+      }
+      If ($Operator) {ForEach ($Key in @($Output.Keys)) {$_ = @($Output.$Key); $Output.$Key = Invoke-Command $Operator}}
+      $Output
+  }
+      
