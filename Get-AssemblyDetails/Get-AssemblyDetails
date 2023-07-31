@@ -148,8 +148,11 @@ param
     Add-ToHashTable -hashTable $refTable -Key "Configuration"  -Value $(Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Configuration' -Property 'Configuration')
     Add-ToHashTable -hashTable $refTable -Key "Description"  -Value $( Get-AssemblyCustomProperty -Assembly $assembly -TypeNameLike 'Description' -Property 'Description')#>
 
-    $assemblyHash.FullName =([Reflection.AssemblyName]::GetAssemblyName($assembly.Location)).FullName
+    $assemblyName=[Reflection.AssemblyName]::GetAssemblyName($assembly.Location)
+    $assemblyHash.FullName =$assemblyName.FullName
     $assemblyHash.Name = $assembly.ManifestModule.Name
+    $assemblyHash.FileVersion=$assemblyName.FileVersion
+    $assemblyHash.Version=$assemblyName.Version
     $assemblyHash.Location = $assembly.Location
     $assemblyHash.ImageRuntimeVersion = $assembly.ImageRuntimeVersion
     $assemblyHash.GlobalAssemblyCache = $assembly.GlobalAssemblyCache  
