@@ -1,26 +1,12 @@
-<#
-   .Notes
-     Script: Export-Functions.ps1
-     Version: Initial Version V(1.0.0)
-     Author: Rajesh Kolla 
-     Last Edit: 2023-04-24
-#>
-
-function Test-FunctionName {
+Function Test-FunctionName {
     [CmdletBinding()]
     [OutputType("boolean")]
-<#
-.SYNOPSIS
- Test function is valid or not 
-.PARAMETER Name
-Name of the function
-#>
     Param(
     [Parameter(Position = 0,Mandatory,HelpMessage = "Specify a function name.")]
     [ValidateNotNullOrEmpty()]
     [string]$Name
     )
-    process {
+
     Write-Verbose "Validating function name $Name"
     #Function name must first follow Verb-Noun pattern
     if ($Name -match "^\w+-\w+$") {
@@ -40,29 +26,10 @@ Name of the function
         $False
     }
 }
-}
-
-Function Export-FunctionFromFile {
+  Function Export-FunctionFromFile {
     [cmdletbinding(SupportsShouldProcess)]
     [alias("eff")]
     [OutputType("None", "System.IO.FileInfo")]
-<#
-.SYNOPSIS
- Export function from File
-
-.PARAMETER Path
-Path
-
-.PARAMETER OutputPath
-OutputPath
-
-.PARAMETER All
-All
-
-.PARAMETER Passthru
-Passthru
-
-#>
     Param(
         [Parameter(Position = 0, Mandatory, HelpMessage = "Specify the .ps1 or .psm1 file with defined functions.")]
         [ValidateScript({
@@ -133,27 +100,20 @@ Passthru
         Write-Warning "No functions detected in $Path."
     }
     Write-Verbose "Ending $($MyInvocation.MyCommand)"
-} 
-
-function Export-FunctionFromScripts{
-<#
-.SYNOPSIS
- Export functions from scripts in $PSScriptRoot folder
-#>
-  Process{
-        if($PSScriptRoot){
-            $exportScript =$PSScriptRoot
-            $exportedFunctions=Join-Path $exportScript "Exported-Functions"
-            New-ItemIfNotExists -Path $ExportecFunctions -ItemType Directory
-            
-            Get-ChildItem -Path $exportScript -File -Filter "*.ps1" `
-            | Where-Object {$_.Name -notin @("Export-Functions.ps1","New-PSUtilityManifest.ps1")}  `
-            | ForEach-Object { Export-FunctionFromFile -Path $_.FullName -Passthru -OutputPath $exportedFunctions}
-
-            <# Get-ChildItem -Path $exportScript -File -Recurse -Include "*.ps1" -Exclude "Export-Functions.ps1","New-PSUtilityManifest.ps1" `
-            | &{Process { Export-FunctionFromFile -Path $_.FullName -Passthru -OutputPath $exportedFunctions}};#>
-         }
-    }
 }
 
-Export-FunctionFromScripts 
+Function Export-FunctionFromScripts{
+    if($PSScriptRoot) {
+        $exportScript= $PSScriptRoot
+        $ExportedFunctions=Join-Path $exportScript "ExportedFunctions"
+        New-ItemIfNotExists -Path $ExportedFunctions -ItemType Directory
+        <#Get-ChildItem -Path $exportScript -File -Filter "*.ps1" `
+                                 |Where-Object {$_.Name -notin @("ExportFunctions.ps1","New-PSUtlityManifest.ps1","Install-PSUtility.ps1") } `
+                                 | ForEach-Object { . $_.FullName }#>
+        Get-ChildItem -Path $exportScript -Recurse -Include '*.ps1' -File -Exclude "ExportFunctions.ps1,New-PSUtlityManifest.ps1,Install-PSUtility.ps1" |
+                        &{Process{ Export-FunctionFromFile -Path   $_.FullName -Passthru -OutputPath $ExportedFunctions}}
+  }
+}
+
+
+Export-FunctionFromScripts

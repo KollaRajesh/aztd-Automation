@@ -1,6 +1,6 @@
-Function New-AppPoolManagementManifest{
-    $psd1File= join-path $PSScriptRoot "AppPool-Management.psd1"
-    $RootModule=  "AppPool-Management.psm1"
+Function New-ServiceManagementManifest{
+    $psd1File= join-path $PSScriptRoot "Service-Management.psd1"
+    $RootModule=  "Service-Management.psm1"
     
     $manifest = @{
         Path              =$psd1File
@@ -9,5 +9,4 @@ Function New-AppPoolManagementManifest{
     }
         New-ModuleManifest @manifest
     }
-    
-    New-AppPoolManagementManifest
+  New-ServiceManagementManifest
