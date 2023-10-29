@@ -7,17 +7,16 @@
  
 <#[CmdletBinding()]
 Param(
-        [Parameter(Mandatory=$True)]
-        [ValidateSet("SLO1","SLO2","SLO3","SLO5","SLO6","PROD", "PA")]
-        [ValidateNotNullOrEmpty()]
+        [Parameter(Mandatory=$False)]
+        [ValidateSet("SLO1","SLO2","SLO3","SLO5","SLO6","PROD", "QA")]
         [String]
         $Environment,
         [ValidateSet("Get-Status","Start-Service" ,"Stop-Service","Restart-Service")]
         [Parameter(Mandatory=$false)]
         [string]$Action="Get-Status",
-        [ValidateSet("DSL.EncryptReportService" ,"DSLOrigWinService","Workload Automation Agent")]
+        [ValidateSet("ReportService" ,"WinService","Agent Service")]
         [Parameter(Mandatory=$false)]
-        [string]$ServiceName="DSL.EncryptReportService"
+        [string]$ServiceName="ReportService"
     )#>
  
 
@@ -36,7 +35,7 @@ Param(
         
             .PARAMETER Environment
                 Specifies environment name.
-                    List of allowed environments:"SLO1","SLO2","SLO3","SLO5","SLO6","PROD", "PA"
+                    List of allowed environments:"TEST1","TEST2","TEST3","TEST5","TEST6","PROD", "PA"
                   Note: This list will be updated when customized script based on needs
         
             .PARAMETER Actions
@@ -45,7 +44,7 @@ Param(
         
             .PARAMETER Service Name 
                 Specifies app pool name.
-                List of allowed environments:DSL.EncryptReportService" ,"DSLOrigWinService","Workload Automation Agent"
+                List of allowed environments:ReportService" ,"WinService","Agent Service"
                 Note: This list will be updated when customized script based on needs
             
             .INPUTS
@@ -55,77 +54,77 @@ Param(
                 None. dont return any one value . it writes status of application pool on the host
         
             .EXAMPLE
-                PS > Invoke-ServiceAction -Environment SLO1 
+                PS > Invoke-ServiceAction -Environment TEST1 
                 
                    Transcript started, output file is D:\BatchMonitor\MsgLog\Service-Management-202306072623.txt
 
-                   2023-06-07 04:26:24: DSL.EncryptReportService is Running in VCWD003133 server for environment - SLO1 .
+                   2023-06-07 04:26:24: ReportService is Running in TESTServer server for environment - TEST1 .
 
                    Transcript stopped, output file is D:\BatchMonitor\MsgLog\Service-Management-202306072623.txt
         
             .EXAMPLE
-                 PS >  Invoke-ServiceAction  -Environment SLO1  -ServiceName DSL.EncryptReportService
+                 PS >  Invoke-ServiceAction  -Environment TEST1  -ServiceName ReportService
                  
                     Transcript started, output file is D:\BatchMonitor\MsgLog\Service-Management-202306072704.txt
 
-                    2023-06-07 04:27:04: DSL.EncryptReportService is Running in VCWD003133 server for environment - SLO1 .
+                    2023-06-07 04:27:04: ReportService is Running in TESTServer server for environment - TEST1 .
 
                     Transcript stopped, output file is D:\BatchMonitor\MsgLog\Service-Management-202306072704.txt
             
             .EXAMPLE
-                 PS >  Invoke-ServiceAction  -Environment SLO1  -ServiceName DSL.EncryptReportService  -IncludedExtrenalTranscript $true
+                 PS >  Invoke-ServiceAction  -Environment TEST1  -ServiceName ReportService  -IncludedExtrenalTranscript $true
 
-                    2023-06-07 04:33:18: DSL.EncryptReportService is Running in VCWD003133 server for environment - SLO1 .
+                    2023-06-07 04:33:18: ReportService is Running in TESTServer server for environment - TEST1 .
         
             .EXAMPLE
-                  PS > Invoke-ServiceAction -Environment SLO1  -ServiceName DSLOrigWinService -Action Start-Service -ChangeTransactionID CHG11655917
+                  PS > Invoke-ServiceAction -Environment TEST1  -ServiceName WinService -Action Start-Service -ChangeTransactionID CHGTicket 
 
                   Transcript started, output file is D:\BatchMonitor\MsgLog\Service-Management-202306074730.txt
 
-                    2023-06-07 05:47:30: Performing Start-Service action on DSLOrigWinService using CHG11655917.
-                    2023-06-07 05:47:30: DSLOrigWinService is already running in VCWD003133 server for SLO1  environment.
+                    2023-06-07 05:47:30: Performing Start-Service action on WinService using CHGTicket .
+                    2023-06-07 05:47:30: WinService is already running in TESTServer server for TEST1  environment.
 
                   Transcript stopped, output file is D:\BatchMonitor\MsgLog\Service-Management-202306074730.txt
 
-                  Note: Email functionality only work in PA \PROD Server
+                  Note: Email functionality only work in QA \PROD Server
 
         .EXAMPLE
-                  PS > Invoke-ServiceAction -Environment SLO1  -ServiceName DSLOrigWinService -Action Stop-Service -ChangeTransactionID CHG11655917
+                  PS > Invoke-ServiceAction -Environment TEST1  -ServiceName WinService -Action Stop-Service -ChangeTransactionID CHGTicket 
 
                   Transcript started, output file is D:\BatchMonitor\MsgLog\Service-Management-202306074837.txt
 
-                    2023-06-07 05:48:37: Performing Stop-Service action on DSLOrigWinService using CHG11655917.
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                        WARNING: Waiting for service 'DSLOrigWinService (DSLOrigWinService)' to stop...
-                    2023-06-07 05:49:10: DSLOrigWinService is Stopped in VCWD003133 server for SLO1  environment.
+                    2023-06-07 05:48:37: Performing Stop-Service action on WinService using Change.
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                        WARNING: Waiting for service 'WinService (WinService)' to stop...
+                    2023-06-07 05:49:10: WinService is Stopped in TESTServer server for TEST1  environment.
                     
                     Transcript stopped, output file is D:\BatchMonitor\MsgLog\Service-Management-202306074837.txt
 
-                    Note: Email functionality only work. if run this command from PA \PROD Server
+                    Note: Email functionality only work. if run this command from QA \PROD Server
 
          .EXAMPLE
-                  PS > Invoke-ServiceAction -Environment SLO1  -ServiceName DSLOrigWinService -Action Stop-Service -ChangeTransactionID CHG11655917
+                  PS > Invoke-ServiceAction -Environment TEST1  -ServiceName WinService -Action Stop-Service -ChangeTransactionID CHGTicket 
 
                     Transcript started, output file is D:\BatchMonitor\MsgLog\Service-Management-202306075130.txt
 
-                    2023-06-07 05:51:30: Performing Restart-Service action on DSLOrigWinService using CHG11655917.
-                    2023-06-07 05:51:34: DSLOrigWinService is Running in VCWD003133 server for SLO1  environment.
+                    2023-06-07 05:51:30: Performing Restart-Service action on WinService using CHGTicket .
+                    2023-06-07 05:51:34: WinService is Running in TESTServer server for TEST1  environment.
 
                     Transcript stopped, output file is D:\BatchMonitor\MsgLog\Service-Management-202306075130.txt
 
-                    Note: Email functionality only work. if run this command from PA \PROD Server
+                    Note: Email functionality only work. if run this command from QA \PROD Server
 
             .LINK 
                 Get-Service,   Stop-Service,    Start-Service, Set-Service
@@ -134,15 +133,15 @@ Param(
         [CmdletBinding()]
         Param(
 
-                [Parameter(Mandatory=$True)]
-                [ValidateSet("SLO1","SLO2","SLO3","SLO5","SLO6","PROD", "PA")]
+                [Parameter(Mandatory=$False)]
+                [ValidateSet("TEST1","TEST2","TEST3","TEST5","TEST6","PROD", "QA")]
                 [String]$Environment,
                 [ValidateSet("Get-ServiceStatus","Start-Service" ,"Stop-Service","Restart-Service")]
                 [Parameter(Mandatory=$false)]
                 [string]$Action="Get-ServiceStatus",
-                [ValidateSet("DSL.EncryptReportService" ,"DSLOrigWinService","Workload Automation Agent")]
+                [ValidateSet("ReportService" ,"WinService","Agent Service")]
                 [Parameter(Mandatory=$false)]
-                [string]$ServiceName="DSL.EncryptReportService",
+                [string]$ServiceName="ReportService",
                 [Parameter(Mandatory=$false)]
                 [bool]$IncludedExtrenalTranscript=$false,
                 [Parameter(Mandatory=$false,HelpMessage="Please enter Change Ticket\Incident for changes")]
@@ -214,7 +213,7 @@ Param(
                             Set-TranscriptRunningState -IsRunning $false 
                           }
                        } 
-                        if ($Action -ne "Get-ServiceStatus" -and $env:COMPUTERNAME.StartsWith("VCW")){ Send-Email -Attachments $logs }else {Write-Host "Note: Email functionality only work. if run this command from PA \PROD Server"  -ForegroundColor Cyan}
+                        if ($Action -ne "Get-ServiceStatus" -and $env:COMPUTERNAME.StartsWith("VCW")){ Send-Email -Attachments $logs }else {Write-Host "Note: Email functionality only work. if run this command from QA \PROD Server"  -ForegroundColor Cyan}
                 }
             }
         end{
@@ -235,9 +234,9 @@ Param(
             [Parameter(Mandatory=$True )]
             [ValidateSet("Get-ServiceStatus","Start-Service" ,"Stop-Service","Restart-Service")]
             [string]$Operation="Get-ServiceStatus",
-            [ValidateSet("DSL.EncryptReportService" ,"DSLOrigWinService","Workload Automation Agent")]
+            [ValidateSet("ReportService" ,"WinService","Agent Service")]
             [Parameter(Mandatory=$True)]
-            [string]$ServiceName="DSL.EncryptReportService",
+            [string]$ServiceName="ReportService",
             [Parameter(Mandatory=$false)]
             [bool] $VerboseLog=$True,
             [bool]$IncludedExtrenalTranscript=$false
@@ -323,8 +322,8 @@ Import PSUtility Module . if it is already imported , remove module and import m
 
 <#$Action="Start-Service"
 $ChangeTransactionID=
-$Environment="SLO1"
-$ServiceName="DSL.EncryptReportService"
-##Invoke-ServiceAction -Environment SLO1 -Action Get-ServiceStatus -ServiceName  DSL.EncryptReportService -IncludedExtrenalTranscript 
+$Environment="TEST1"
+$ServiceName="ReportService"
+##Invoke-ServiceAction -Environment TEST1 -Action Get-ServiceStatus -ServiceName  ReportService -IncludedExtrenalTranscript 
 
 Invoke-ServiceAction -Environment $Environment  -ServiceName $ServiceName -Action $Action -ChangeTransactionID ChangeTransactionID  #> 
