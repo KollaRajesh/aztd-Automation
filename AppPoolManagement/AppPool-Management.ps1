@@ -1,4 +1,4 @@
-﻿ <#
+ <#
       .NOTES
         Author: Rajesh Kolla
         Last Edit: 2023-04-03
@@ -8,16 +8,15 @@
 <#[CmdletBinding()]
 Param(
         [Parameter(Mandatory=$True)]
-        [ValidateSet("SLO1","SLO2","SLO3","SLO5","SLO6","PROD_NA","PROD_RW","PROD", "PA")]
-        [ValidateNotNullOrEmpty()]
-        [String]
+        [ValidateSet("TEST1","TEST2","TEST3","TEST5","TEST6","PROD_NonDR","PROD_DR","PROD", "QA")]
+        [String] 
         $Environment,
         [ValidateSet("Get-WebAppPoolState","Start-WebAppPool" ,"Stop-WebAppPool","Restart-WebAppPool")]
         [Parameter(Mandatory=$false)]
         [string]$Action="Get-WebAppPoolState",
-        [ValidateSet("IndividualCreditAppPool" ,"GDSLCalculatorAppPool","DSLOrigAppPool","DSLWebAPIAppPool","DSLWebServicesAppPool")]
+        [ValidateSet("UserAppPool" ,"PatientAppPool","ServiceAppPool","PermiumAppPool","BillAppPool")]
         [Parameter(Mandatory=$false)]
-        [string]$appPool="IndividualCreditAppPool"
+        [string]$appPool="UserAppPool"
     )#>
  
 
@@ -38,7 +37,7 @@ Param(
         
             .PARAMETER Environment
                 Specifies environment name.
-                    List of allowed environments:"SLO1","SLO2","SLO3","SLO5","SLO6","QA","PROD_NonDR","PROD_DR","PROD"
+                    List of allowed environments:"TEST1","TEST2","TEST3","TEST5","TEST6","QA","PROD_NonDR","PROD_DR","PROD"
                   Note: This list will be updated when customized script based on needs
         
             .PARAMETER Actions
@@ -57,16 +56,16 @@ Param(
                 Non. dont return any one value . it writes status of application pool on the host
         
             .EXAMPLE
-                PS > Invoke-AppPoolAction -Environment SLO1 
+                PS > Invoke-AppPoolAction -Environment TEST1 
                 
-                2023-04-23 09:40:51: Status of the IndividualCreditAppPool app pool is Started in VCWQ003182 Server for environment - SLO1.
-                2023-04-23 09:40:54: Status of the IndividualCreditAppPool app pool is Started in VCWQ003205 Server for environment - SLO1.
+                2023-04-23 09:40:51: Status of the UserAppPool app pool is Started in VCWQ003182 Server for environment -TEST1.
+                2023-04-23 09:40:54: Status of the UserAppPool app pool is Started in VCWQ003205 Server for environment -TEST1.
         
             .EXAMPLE
-                 PS > Invoke-AppPoolAction -Environment SLO1  -appPoolName DSLOrigAppPool
+                 PS > Invoke-AppPoolAction -Environment TEST1  -appPoolName ServiceAppPool
         
             .EXAMPLE
-                  PS > Invoke-AppPoolAction -Environment SLO1  -appPoolName DSLWebAPIAppPool -Operation Restart-WebAppPool
+                  PS > Invoke-AppPoolAction -Environment TEST1  -appPoolName LoanAppPool -Operation Restart-WebAppPool
         
             .LINK 
                 WebAdministration
@@ -79,15 +78,15 @@ Param(
         #>
         [CmdletBinding()]
         Param(
-                [Parameter(Mandatory=$True)]
-                [ValidateSet("SLO1","SLO2","SLO3","SLO5","SLO6","PROD_NA","PROD_RW","PROD", "PA")]
+                [Parameter(Mandatory=$False)]
+                [ValidateSet("TEST1","TEST2","TEST3","TEST5","TEST6","PROD_NonDR","PROD_DR","PROD", "QA")]
                 [String]$Environment,
                 [ValidateSet("Get-WebAppPoolState","Start-WebAppPool" ,"Stop-WebAppPool","Restart-WebAppPool")]
                 [Parameter(Mandatory=$false)]
                 [string]$Action="Get-WebAppPoolState",
-                [ValidateSet("GDSLCalculatorAppPool","IndividualCreditAppPool" ,"DSLOrigAppPool","DSLWebAPIAppPool","DSLWebServicesAppPool")]
+                [ValidateSet("PatientAppPool","UserAppPool" ,"ServiceAppPool","PermiumAppPool","BillAppPool")]
                 [Parameter(Mandatory=$false)]
-                [string]$AppPool="IndividualCreditAppPool",
+                [string]$AppPool="UserAppPool",
                 [boolean]$IncludedExtrenalTranscript=$false,
                 [Parameter(Mandatory=$false,HelpMessage="Please enter Change Ticket\Incident for changes")]
                 [string]$ChangeTransactionID
@@ -212,12 +211,12 @@ Param(
         Param(
             [Parameter(Mandatory=$True)]
             [string]$hostName,
-            [Parameter(Mandatory=$false )]
+            [Parameter(Mandatory=$False )]
             [string]$Environment,
             [Parameter(Mandatory=$True )]
             [ValidateSet("Get-WebAppPoolState","Start-WebAppPool" ,"Stop-WebAppPool","Restart-WebAppPool")]
             [string]$Operation,
-            [ValidateSet("GDSLCalculatorAppPool","IndividualCreditAppPool" ,"DSLOrigAppPool","DSLWebAPIAppPool","DSLWebServicesAppPool")]
+            [ValidateSet("PatientAppPool","UserAppPool" ,"ServiceAppPool","PermiumAppPool","BillAppPool")]
             [Parameter(Mandatory=$True)]
             [string]$appPoolName,
             [Parameter(Mandatory=$false)]
@@ -256,5 +255,5 @@ Param(
         
         <#$Action="Start-WebAppPool"
         $ChangeTransactionID=
-        $Environment="SLO1"
-        Invoke-AppPoolAction -Environment $Environment -Action $Action -AppPool $appPool  -ChangeTransactionID $ChangeTransactionID#
+        $Environment="TEST1"
+        Invoke-AppPoolAction -Environment $Environment -Action $Action -AppPool $appPool  -ChangeTransactionID $ChangeTransactionID#>
